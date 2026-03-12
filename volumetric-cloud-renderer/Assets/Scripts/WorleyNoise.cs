@@ -61,9 +61,12 @@ public class WorleyNoise : MonoBehaviour
                 // maximum distance for one 1x1 square is sqrt(2), so normalise the distance to be between 0 and 1
                 float normalised = minDist / Mathf.Sqrt(2);
 
-                // Pixel colours are bright when normalised is higher and darker when normalised is lower, so
-                // a pixel that is very close to a point will be darker than a pixel that is far away from all points.
-                texture.SetPixel(x, y, new Color(normalised, normalised, normalised));
+                // invert to make the texture darker further from points
+                float inverted = 1 - normalised;
+
+                // Pixel colours are bright when inverted is lower and darker when inverted is higher, so
+                // a pixel that is very close to a point will be lighter than a pixel that is far away from all points.
+                texture.SetPixel(x, y, new Color(inverted, inverted, inverted));
             }
         }
 

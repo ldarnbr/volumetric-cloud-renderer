@@ -19,8 +19,12 @@ public class WorleyNoiseCells : MonoBehaviour
 
     void OnValidate()
     {
-        // will regenerate the texture when a value is changed in the inspector
-        UpdateTexture();
+        // will regenerate the texture when a value is changed in the inspector *only* in play mode.
+        // previously when updated in edit mode would bloat memory with textures
+        if (Application.isPlaying)
+        {
+           UpdateTexture();
+        }
     }
 
     void UpdateTexture()

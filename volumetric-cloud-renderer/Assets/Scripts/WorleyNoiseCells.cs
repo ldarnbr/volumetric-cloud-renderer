@@ -49,12 +49,10 @@ public class WorleyNoiseCells : MonoBehaviour
         {
             for (int y = 0; y < cellCount; y++)
             {
-                // each cell is a 1/cellCount fraction of the space
-                float size = 1.0f / cellCount;
 
                 // assign a random coordinate within the bounds of the cell
-                float randomX = (x + Random.value) * size;
-                float randomY = (y + Random.value) * size;
+                float randomX = (x + Random.value) * cellSize;
+                float randomY = (y + Random.value) * cellSize;
                 points[x, y] = new Vector2(randomX, randomY);
             }
         }
@@ -107,8 +105,6 @@ public class WorleyNoiseCells : MonoBehaviour
                         }
                     }
                 }
-
-                cellSize = 1.0f / cellCount;
 
                 // Maximum distance is when the pixel is in the corner of a cell and the point is in the opposite corner
                 float maxDist = Mathf.Sqrt(2) * cellSize;

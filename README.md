@@ -25,9 +25,9 @@ full volumetric rendering in incremental stages.
 ## How to Install
 1. Clone the repository
 
-'''bash
+```bash
 git clone https://github.com/ldarnbr/volumetric-cloud-renderer.git
-'''
+```
 
 2. Open Unity Hub
 3. Click Add -> Add project from disk -> select the 'volumetric-cloud-renderer' folder.

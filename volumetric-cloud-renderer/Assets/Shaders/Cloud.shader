@@ -108,7 +108,7 @@ Shader "Custom/CloudShader"
             float4 MarchDensity(float entry, float exit, float3 rayOrigin, float3 rayDirection, float3 boxMin, float3 boxMax)
             {
                 // how far along the rays path we march before getting the density value
-                float stepSize = 0.1;
+                float stepSize = 0.01;
 
                 // total density measured at all steps
                 float densityTotal = 0;

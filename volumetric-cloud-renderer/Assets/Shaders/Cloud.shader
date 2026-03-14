@@ -120,17 +120,36 @@ Shader "Custom/CloudShader"
                 // distance is measured from the box entry point
                 float distanceTravelled = entry;
 
+                int stepLimit = 100;
+
                 // keep incrementing the steps until the exit is reached
-                while(distanceTravelled < exit)
+                // had to refactor to a for loop because the shader caused errors due to the while loop
+                // having different iteration counts. Converted to a for loop with a defined max iterations but 
+                // the exit condition is still checked and breaks out once met.
+                for (int i = 0; i < stepLimit; i++)
                 {
-                    rayPosition = rayPosition + (rayDirection * stepSize);
-                    distanceTravelled = distanceTravelled + stepSize;
 
-                    // adding small values to density for testing
-                    densityTotal = densityTotal + 0.1;
-
+                    if (distanceTravelled > exit)
+                    {
+                        break;
                     }
-                    return float4(densityTotal, densityTotal, densityTotal, 1);
+
+                    // position is in world space
+                    rayPosition = rayPosition + (rayDirection * stepSize);
+
+                    // convert the position to 0-1 uvw coordinates
+                    float3 uvwRay = (rayPosition - boxMin) / (boxMax - boxMin);
+
+                    // supply the uvw coordinates of the ray to sample the 3D texture at that position.
+                    // reads from the red channel but the values are the same across rgb channels from WorleyNoise3D
+                    float density = tex3D(_NoiseTex, uvwRay).r;
+
+                    // need to scale the density contribution by stepSize to prevent bigger steps contributing less to the total
+                    densityTotal = densityTotal + density * stepSize;
+
+                    distanceTravelled = distanceTravelled + stepSize;
+                }
+                return float4(densityTotal, densityTotal, densityTotal, 1);
             }
 
             // DOCS:

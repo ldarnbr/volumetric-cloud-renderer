@@ -10,6 +10,9 @@ public class CloudRenderer : MonoBehaviour
     // the object for the cloud volume bounding box in the scene
     public GameObject CloudVolumeBounds;
 
+    // reference to the noise generator to get the 3D texture from it in the shader
+    public WorleyNoise3D NoiseGenerator;
+
     // DOCS:
     // https://docs.unity3d.com/6000.3/Documentation/ScriptReference/MonoBehaviour.OnRenderImage.html
 
@@ -48,6 +51,11 @@ public class CloudRenderer : MonoBehaviour
             CloudShaderMaterial.SetVector("_FrustumCornerBR", camera.transform.TransformDirection(frustumCorners[3]));
             CloudShaderMaterial.SetVector("_FrustumCornerTL", camera.transform.TransformDirection(frustumCorners[1]));
             CloudShaderMaterial.SetVector("_FrustumCornerBL", camera.transform.TransformDirection(frustumCorners[0]));
+
+            // generates the 3D noise texture and passes it to the shader
+            Texture3D noiseTex = NoiseGenerator.GenerateTexture();
+
+            CloudShaderMaterial.SetTexture("_NoiseTex", noiseTex);
 
             // runs the shader on every pixel (Graphics.Blit) and outputs to the destination
             Graphics.Blit(source, destination, CloudShaderMaterial);

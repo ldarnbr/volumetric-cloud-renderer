@@ -24,6 +24,9 @@ Shader "Custom/CloudShader"
             // the scene from Graphics.Blit as a 2D texture. Links to the _MainTex in the inspector
             sampler2D _MainTex;
 
+            // the 3D noise texture for density sampling
+            sampler3D _NoiseTex;
+
             float3 _CameraWorldPosition;
             float3 _CloudVolumeMinBound;
             float3 _CloudVolumeMaxBound;
@@ -102,6 +105,34 @@ Shader "Custom/CloudShader"
                 return float2(entry, exit);
             }
 
+            float4 MarchDensity(float entry, float exit, float3 rayOrigin, float3 rayDirection, float3 boxMin, float3 boxMax)
+            {
+                // how far along the rays path we march before getting the density value
+                float stepSize = 0.1;
+
+                // total density measured at all steps
+                float densityTotal = 0;
+
+                // gives the distance along the ray where it first hits the box.
+                // This is the starting position for the raymarching.
+                float3 rayPosition = rayOrigin + rayDirection * entry;
+
+                // distance is measured from the box entry point
+                float distanceTravelled = entry;
+
+                // keep incrementing the steps until the exit is reached
+                while(distanceTravelled < exit)
+                {
+                    rayPosition = rayPosition + (rayDirection * stepSize);
+                    distanceTravelled = distanceTravelled + stepSize;
+
+                    // adding small values to density for testing
+                    densityTotal = densityTotal + 0.1;
+
+                    }
+                    return float4(densityTotal, densityTotal, densityTotal, 1);
+            }
+
             // DOCS:
             // https://docs.unity3d.com/2020.1/Documentation/Manual/SL-ShaderSemantics.html
             float4 FragmentProgram (VertexOutput input) : SV_Target
@@ -111,7 +142,13 @@ Shader "Custom/CloudShader"
 
                 // casts a ray from the camera through the pixel
                 float3 origin = _CameraWorldPosition;
-                float3 direction = input.rayDirection;
+
+                // This caused significant bugs because the previous implementation wasn't normalised. 
+                // This meant the distance which was being read relative to the far clip plane was a large amount of
+                // units, causing the rays in the marcher to just step past the entire volume instantly, so no
+                // density gradient was being shown. Normalize keeps the value at 1 so the number of steps can properly
+                // be controlled (e.g. a cube 10x10x10 through the center with a step size of 0.1 is 100 steps to sample density).
+                float3 direction = normalize(input.rayDirection);
 
                 // check the ray to see if it intersects the cloud volume box
                 float2 intersection = RayBoxIntersection(origin, direction, _CloudVolumeMinBound, _CloudVolumeMaxBound);
@@ -122,7 +159,8 @@ Shader "Custom/CloudShader"
                 // is closer to the camera than the closes exit.
                 if (entry < exit)
                 {
-                    return float4(0, 1, 0, 1);
+                    float4 cloudColour = MarchDensity(entry, exit, origin, direction, _CloudVolumeMinBound, _CloudVolumeMaxBound);
+                    return cloudColour;
                 }
 
                 // pixels that dont intersect are lef alone

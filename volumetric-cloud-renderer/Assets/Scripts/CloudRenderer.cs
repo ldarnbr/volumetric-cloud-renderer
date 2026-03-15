@@ -13,6 +13,15 @@ public class CloudRenderer : MonoBehaviour
     // reference to the noise generator to get the 3D texture from it in the shader
     public WorleyNoise3D NoiseGenerator;
 
+    // this will control how much light the cloud absorbs via Beer-Lambert
+    // Defaults to 1.0 so that the base transmittance is set to exp(-densityTotal).
+    [Range(0f, 5f)]
+    public float absorptionCoefficient = 1.0f;
+
+    // sets the minimum noise value to contribute to the cloud density. A higher threshold means sparser clouds.
+    [Range(0f, 1f)]
+    public float densityThreshold = 0.1f;
+
     // DOCS:
     // https://docs.unity3d.com/6000.3/Documentation/ScriptReference/MonoBehaviour.OnRenderImage.html
 
@@ -28,6 +37,7 @@ public class CloudRenderer : MonoBehaviour
             // give the shader the boundary positions
             CloudShaderMaterial.SetVector("_CloudVolumeMinBound", CloudVolumeMinBound);
             CloudShaderMaterial.SetVector("_CloudVolumeMaxBound", CloudVolumeMaxBound);
+            CloudShaderMaterial.SetFloat("_DensityThreshold", densityThreshold);
 
             // passes the camera position to the shader. transfomr.position is the world position of the camera.
             CloudShaderMaterial.SetVector("_CameraWorldPosition", transform.position);
@@ -56,6 +66,7 @@ public class CloudRenderer : MonoBehaviour
             Texture3D noiseTex = NoiseGenerator.GenerateTexture();
 
             CloudShaderMaterial.SetTexture("_NoiseTex", noiseTex);
+            CloudShaderMaterial.SetFloat("_AbsorptionCoefficient", absorptionCoefficient);
 
             // runs the shader on every pixel (Graphics.Blit) and outputs to the destination
             Graphics.Blit(source, destination, CloudShaderMaterial);

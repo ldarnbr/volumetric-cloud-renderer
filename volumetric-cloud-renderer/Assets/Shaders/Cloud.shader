@@ -36,6 +36,9 @@ Shader "Custom/CloudShader"
             float3 _FrustumCornerBL;
             float3 _FrustumCornerBR;
 
+            float _AbsorptionCoefficient;
+            float _DensityThreshold;
+
             // data that comes in from unity per vertex
             struct VertexInput
             {
@@ -144,12 +147,31 @@ Shader "Custom/CloudShader"
                     // reads from the red channel but the values are the same across rgb channels from WorleyNoise3D
                     float density = tex3D(_NoiseTex, uvwRay).r;
 
-                    // need to scale the density contribution by stepSize to prevent bigger steps contributing less to the total
-                    densityTotal = densityTotal + density * stepSize;
+                    // setting a threshold density means we can make the clouds more sparse
+                    if (density > _DensityThreshold)
+                    {
+                        // need to scale the density contribution by stepSize to prevent bigger steps contributing less to the total
+                        densityTotal = densityTotal + density * stepSize;
+                    }
 
                     distanceTravelled = distanceTravelled + stepSize;
                 }
-                return float4(densityTotal, densityTotal, densityTotal, 1);
+
+                /* 
+                I'm applying a simplified version of Beer-Lambert transmittance. The actual equation
+                involves the molar absoption coefficient and molar concentration, as its used in chemistry
+                when evaluating transmittance through actual substances:
+                REF: https://www.edinst.com/resource/the-beer-lambert-law/
+                In this approximation, the _AbsorptionCoefficient is some factor that we can control to 
+                dynamically adjust the style of the clouds. We use the negative exponent because light 
+                naturally falls off travelling through a volume.
+                    
+                cloudTransmittance = 1 -> Transparent
+                cloudTransmittance = 0 -> Fully opaque
+                */
+                float cloudTransmittance = exp(-densityTotal * _AbsorptionCoefficient);
+
+                return float4(1, 1, 1, 1 - cloudTransmittance);
             }
 
             // DOCS:
@@ -179,7 +201,11 @@ Shader "Custom/CloudShader"
                 if (entry < exit)
                 {
                     float4 cloudColour = MarchDensity(entry, exit, origin, direction, _CloudVolumeMinBound, _CloudVolumeMaxBound);
-                    return cloudColour;
+                    
+                    // need to linearly interpolate the colour because the screen does not consider the alpha channel
+                    // at alpha = 0, the colour will be the originalColour (aka the cloud has transparency)
+                    // at alpha = 1, the cloud will be fully opaque white
+                    return lerp(originalColour, cloudColour, cloudColour.a);
                 }
 
                 // pixels that dont intersect are lef alone

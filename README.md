@@ -16,11 +16,17 @@ full volumetric rendering in incremental stages.
 
 ## Progress
 1. 2D Worley noise generation
-2. Worley noise tiling to eliminate seams when textures repeat.
-3. Cellular Worley noise optimisation.
-4. A slice viewer to inspect volumes.
-5. Post processing using OnRenderImage.
-6. Ray box intersection using the slab method.
+2. Worley noise tiling to eliminate seams when textures repeat
+3. Cellular Worley noise optimisation (Worley, 1996)
+4. A slice viewer to inspect volumes
+5. Post processing using OnRenderImage
+6. Ray box intersection using the slab method (Kay et al, 1986)
+7. Raymarching with density sampling the 3D noise texture
+8. Beer-Lambert Transmittance (Edinburgh Instruments, 2021)
+9. Light marching with opacity/brightness accumulation
+10. Sun colour tinting
+11. Henyey-Greenstein light scattering (Hillaire, 2016)
+12. World space noise sampling for cloud volume scaling
 
 ## How to Install
 1. Clone the repository

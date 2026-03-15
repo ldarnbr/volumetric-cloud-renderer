@@ -6,20 +6,23 @@ survey of literature around cloud rendering. The method closely resembles Sebast
 The steps of the plan are subject to change if any issues are encountered. The general scope of the work is quite large, so there may be some compromises made on the way. I will aim to keep the plan document up to date if anything does change.
 
 ## Completed
-- [X] 2D Worley noise generation
+- [X] 2D Worley noise generation.
 - [X] Worley noise tiling to eliminate seams when textures repeat.
 - [X] Cellular Worley noise optimisation.
 - [X] A slice viewer to inspect volumes.
 - [X] Post processing using OnRenderImage.
 - [X] Ray box intersection using the slab method.
+- [x] Density sampling the 3D noise texture.
+- [x] Density thresholding.
+- [x] Beer-Lambert transmittance.
+- [x] Light marching with opacity/brightness accumulation.
+- [x] Sun light colour tinting.
+- [x] Henyey-Greenstein light scattering.
+- [x] World space noise sampling to scale noise texture with cloud volume.
 
 ## Currently Working On
-- Raymarching through the cloud volume
+- Perlin-Worley noise combination to refine cloud shapes
 
 ## Future Work
-- [] Density sampling the 3D noise texture
-- [] Beer-Lambert transmittance
-- [] Henyey-Greenstein light scattering
-- [] Combining Perlin with Worley noise
 - [] Performance testing and results
 - [] Write up!

@@ -41,6 +41,7 @@ Shader "Custom/CloudShader"
             float3 _SunDirection;
             float4 _SunColour;
             float _ScatterFactor;
+            float _CloudScale;
 
             // data that comes in from unity per vertex
             struct VertexInput
@@ -147,6 +148,8 @@ Shader "Custom/CloudShader"
                     // normalise the position to compare to the box coordinates
                     float3 uvwPosition = (rayPosition - boxMin) / (boxMax - boxMin);
 
+                    float3 worldScaledRay = rayPosition *_CloudScale;
+
                     // need to check if the position is located in the bounding box
                     if (
                         uvwPosition.x >= 0 && uvwPosition.x <= 1 &&
@@ -155,7 +158,7 @@ Shader "Custom/CloudShader"
                     )
                     {
                         // accumulate the light density from the noise texture, accounting for stepSize
-                        lightDensity = lightDensity + tex3D(_NoiseTex, uvwPosition).r * stepSize;
+                        lightDensity = lightDensity + tex3D(_NoiseTex, worldScaledRay).r * stepSize;
                     }
                 }
                 // Beer-Lambert to get the actual amount of light that gets to the point
@@ -197,12 +200,13 @@ Shader "Custom/CloudShader"
                     // position is in world space
                     rayPosition = rayPosition + (rayDirection * stepSize);
 
-                    // convert the position to 0-1 uvw coordinates
-                    float3 uvwRay = (rayPosition - boxMin) / (boxMax - boxMin);
+                    // the world position of the ray is used to sample the noise. This makes the noise tile rather
+                    // than stretch when the volume box is adjusted.
+                    float3 worldScaledRay = rayPosition * _CloudScale;
 
                     // supply the uvw coordinates of the ray to sample the 3D texture at that position.
                     // reads from the red channel but the values are the same across rgb channels from WorleyNoise3D
-                    float density = tex3D(_NoiseTex, uvwRay).r;
+                    float density = tex3D(_NoiseTex, worldScaledRay).r;
 
                     // setting a threshold density means we can make the clouds more sparse
                     if (density > _DensityThreshold)

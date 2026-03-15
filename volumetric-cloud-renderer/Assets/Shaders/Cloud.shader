@@ -133,7 +133,8 @@ Shader "Custom/CloudShader"
                return numerator / (4.0 * 3.14159 * denominator);
             }
 
-
+            // sample at points in the direction toward the sun from the current position to calculate transmittance.
+            // uses a simplified Beer-Lambert equation to determine how much sunlight reaches the sample point.
             float MarchLight(float3 rayPosition, float3 boxMin, float3 boxMax)
             {
                 float stepSize = 0.2;

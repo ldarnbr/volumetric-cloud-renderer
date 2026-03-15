@@ -1,3 +1,18 @@
+/* 
+ * WorleyNoise3D.cs extends the 2D cell approach in WorleyNoiseCells.cs to 3D.
+ * The grid is now a 3D cube of cells where each cell checks 26 neighbours instead of 8.
+ * 
+ * The red dot visualiser helped debug a problem in the first implementation which occured
+ * when the cell coordinates wrapped around using modulo. This caused the coordinates to wrap
+ * to the wrong side of the texture. Taking the difference of the expected coordinate and the
+ * wrapped coordinates allowed the coordinates to be offset back to the right position.
+ * 
+ * The cellular noise concept is explained in:
+ * A Cellular Texture Basis Function
+ * https://doi.org/10.1145/237170.237267
+ * Steven Worley
+ */
+
 using UnityEngine;
 
 public class WorleyNoise3D : MonoBehaviour
@@ -129,9 +144,6 @@ public class WorleyNoise3D : MonoBehaviour
 
                     // inversion so pixels close to the point are bright (bubble like)
                     float inverted = 1 - normalised;
-
-                    // more contrast by raising to the power of 3
-                    // float contrasted = Mathf.Pow(Mathf.Clamp01(inverted), 2);
 
                     // 3D coordinates need to be converted to a 1D index for the texture array
                     int index = pixelZ * (textureSize * textureSize) + pixelY * textureSize + pixelX;

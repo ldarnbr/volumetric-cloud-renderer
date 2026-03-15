@@ -1,3 +1,15 @@
+/* 
+ * WorleyNoiseCells.cs implements a 2D cell organised Worley noise texture.
+ * It works by spliting the texture into a grid of cells, which each get a randomly placed
+ * 'nucleus'. This means that any pixel needs to only check its immediate 8 cell neighbours as well as its 
+ * own cell to find the nearest nucleus which will decide its density. This is a simplification of the method 
+ * presented in the following literature, which discusses the method using Hash functions:
+ * 
+ * A Cellular Texture Basis Function
+ * https://doi.org/10.1145/237170.237267
+ * Steven Worley
+ */ 
+
 using UnityEngine;
 
 public class WorleyNoiseCells : MonoBehaviour

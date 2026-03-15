@@ -7,8 +7,6 @@ public class SliceViewer : MonoBehaviour
     [Range(0f, 1f)]
     public float sliceDepth = 0f;
 
-
-    // Start is called before the first frame update
     void Start()
     {
         UpdateSlice();
@@ -22,7 +20,6 @@ public class SliceViewer : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
     void UpdateSlice()
     {
         if (noiseGenerator != null)

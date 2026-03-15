@@ -39,6 +39,7 @@ Shader "Custom/CloudShader"
             float _AbsorptionCoefficient;
             float _DensityThreshold;
             float3 _SunDirection;
+            float4 _SunColour;
 
             // data that comes in from unity per vertex
             struct VertexInput
@@ -209,8 +210,8 @@ Shader "Custom/CloudShader"
                 cloudTransmittance = 0 -> Fully opaque
                 */
                 float cloudTransmittance = exp(-densityTotal * _AbsorptionCoefficient);
-
-                return float4(brightness, brightness, brightness, 1 - cloudTransmittance);
+                float3 cloudColour = brightness * _SunColour.rgb;
+                return float4(cloudColour, 1 - cloudTransmittance);
             }
 
             // DOCS:

@@ -73,6 +73,8 @@ public class CloudRenderer : MonoBehaviour
             // obtains the direction of the light emitted from the sun to pass to the shader for light marching
             // reverse with - to get the direction of the vector from the cloud position to the sun
             CloudShaderMaterial.SetVector("_SunDirection", -sunLight.transform.forward);
+            // get the colour for tinting
+            CloudShaderMaterial.SetVector("_SunColour", new Vector4(sunLight.color.r, sunLight.color.g, sunLight.color.b, 1));
 
             // runs the shader on every pixel (Graphics.Blit) and outputs to the destination
             Graphics.Blit(source, destination, CloudShaderMaterial);

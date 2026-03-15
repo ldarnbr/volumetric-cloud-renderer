@@ -22,6 +22,8 @@ public class CloudRenderer : MonoBehaviour
     [Range(0f, 1f)]
     public float densityThreshold = 0.1f;
 
+    public Light sunLight;
+
     // DOCS:
     // https://docs.unity3d.com/6000.3/Documentation/ScriptReference/MonoBehaviour.OnRenderImage.html
 
@@ -67,6 +69,10 @@ public class CloudRenderer : MonoBehaviour
 
             CloudShaderMaterial.SetTexture("_NoiseTex", noiseTex);
             CloudShaderMaterial.SetFloat("_AbsorptionCoefficient", absorptionCoefficient);
+
+            // obtains the direction of the light emitted from the sun to pass to the shader for light marching
+            // reverse with - to get the direction of the vector from the cloud position to the sun
+            CloudShaderMaterial.SetVector("_SunDirection", -sunLight.transform.forward);
 
             // runs the shader on every pixel (Graphics.Blit) and outputs to the destination
             Graphics.Blit(source, destination, CloudShaderMaterial);

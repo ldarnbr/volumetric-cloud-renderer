@@ -38,6 +38,7 @@ Shader "Custom/CloudShader"
 
             float _AbsorptionCoefficient;
             float _DensityThreshold;
+            float3 _SunDirection;
 
             // data that comes in from unity per vertex
             struct VertexInput
@@ -108,6 +109,36 @@ Shader "Custom/CloudShader"
                 return float2(entry, exit);
             }
 
+            float MarchLight(float3 rayPosition, float3 boxMin, float3 boxMax)
+            {
+                float stepSize = 0.2;
+                int stepLimit = 6;
+                float lightDensity = 0;
+
+                for (int i = 0; i < stepLimit; i++)
+                {
+                    // step through the volume, from the current position in the direction towards the sun
+                    rayPosition = rayPosition + _SunDirection * stepSize;
+
+                    // normalise the position to compare to the box coordinates
+                    float3 uvwPosition = (rayPosition - boxMin) / (boxMax - boxMin);
+
+                    // need to check if the position is located in the bounding box
+                    if (
+                        uvwPosition.x >= 0 && uvwPosition.x <= 1 &&
+                        uvwPosition.y >= 0 && uvwPosition.y <= 1 &&
+                        uvwPosition.z >= 0 && uvwPosition.z <= 1
+                    )
+                    {
+                        // accumulate the light density from the noise texture, accounting for stepSize
+                        lightDensity = lightDensity + tex3D(_NoiseTex, uvwPosition).r * stepSize;
+                    }
+                }
+                // Beer-Lambert to get the actual amount of light that gets to the point
+                return exp(-lightDensity * _AbsorptionCoefficient);
+            }
+
+            // what the cloud looks like from our view, marching from the camera through the cloud
             float4 MarchDensity(float entry, float exit, float3 rayOrigin, float3 rayDirection, float3 boxMin, float3 boxMax)
             {
                 // how far along the rays path we march before getting the density value
@@ -115,6 +146,8 @@ Shader "Custom/CloudShader"
 
                 // total density measured at all steps
                 float densityTotal = 0;
+
+                float brightness = 0;
 
                 // gives the distance along the ray where it first hits the box.
                 // This is the starting position for the raymarching.
@@ -150,8 +183,14 @@ Shader "Custom/CloudShader"
                     // setting a threshold density means we can make the clouds more sparse
                     if (density > _DensityThreshold)
                     {
-                        // need to scale the density contribution by stepSize to prevent bigger steps contributing less to the total
+                        // separates opacity and brightness. Before, they were joined and it was causing shadowed areas
+                        // to contribute less to the densityTotal. Now densityTotal only controls opacity.
                         densityTotal = densityTotal + density * stepSize;
+                        float sunTransmittance = MarchLight(rayPosition, boxMin, boxMax);
+                        float cameraTransmittance = exp(-densityTotal * _AbsorptionCoefficient);
+
+                        // must include some scaling with density because light scatters more if the volume is dense
+                        brightness = brightness + density * sunTransmittance * cameraTransmittance * stepSize;
                     }
 
                     distanceTravelled = distanceTravelled + stepSize;
@@ -171,7 +210,7 @@ Shader "Custom/CloudShader"
                 */
                 float cloudTransmittance = exp(-densityTotal * _AbsorptionCoefficient);
 
-                return float4(1, 1, 1, 1 - cloudTransmittance);
+                return float4(brightness, brightness, brightness, 1 - cloudTransmittance);
             }
 
             // DOCS:

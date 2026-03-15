@@ -22,6 +22,10 @@ public class CloudRenderer : MonoBehaviour
     [Range(0f, 1f)]
     public float densityThreshold = 0.1f;
 
+    // controls the light scattering forward through the cloud, 0-1 weakest-strongest scattering
+    [Range(0f, 1f)]
+    public float scatterFactor = 0.3f;
+
     public Light sunLight;
 
     // DOCS:
@@ -40,6 +44,7 @@ public class CloudRenderer : MonoBehaviour
             CloudShaderMaterial.SetVector("_CloudVolumeMinBound", CloudVolumeMinBound);
             CloudShaderMaterial.SetVector("_CloudVolumeMaxBound", CloudVolumeMaxBound);
             CloudShaderMaterial.SetFloat("_DensityThreshold", densityThreshold);
+            CloudShaderMaterial.SetFloat("_ScatterFactor", scatterFactor);
 
             // passes the camera position to the shader. transfomr.position is the world position of the camera.
             CloudShaderMaterial.SetVector("_CameraWorldPosition", transform.position);

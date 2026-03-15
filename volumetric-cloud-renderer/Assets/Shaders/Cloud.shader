@@ -40,6 +40,7 @@ Shader "Custom/CloudShader"
             float _DensityThreshold;
             float3 _SunDirection;
             float4 _SunColour;
+            float _ScatterFactor;
 
             // data that comes in from unity per vertex
             struct VertexInput
@@ -109,6 +110,28 @@ Shader "Custom/CloudShader"
 
                 return float2(entry, exit);
             }
+            /*
+            This function uses equation (9) on page 12 of the following reference:
+            Physically Based Sky, Atmosphere and Cloud Rendering in frostbite
+            Sebastien Hillaire, EA Frostbite
+            Available at:
+            https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/s2016-pbs-frostbite-sky-clouds-new.pdf
+            */
+            float HG(float3 rayDirection, float3 sunDirection, float scatterFactor)
+            {
+               // dot product of a and b = |a| * |b| * cos(theta)
+               // for normalised vectors dot(a, b) = cos(theta)
+               // when the rays are parallel (aka facing the sun) cosAngle = 1
+               // when the rays are opposite cosAngle = -1
+               float cosAngle = dot(normalize(rayDirection), normalize(sunDirection));
+
+               float scatterFactor2 = scatterFactor * scatterFactor;
+
+               float numerator = 1.0 - scatterFactor2;
+               float denominator = pow(1.0 + scatterFactor2 - 2.0 * scatterFactor * cosAngle, 1.5);
+               return numerator / (4.0 * 3.14159 * denominator);
+            }
+
 
             float MarchLight(float3 rayPosition, float3 boxMin, float3 boxMax)
             {
@@ -189,9 +212,9 @@ Shader "Custom/CloudShader"
                         densityTotal = densityTotal + density * stepSize;
                         float sunTransmittance = MarchLight(rayPosition, boxMin, boxMax);
                         float cameraTransmittance = exp(-densityTotal * _AbsorptionCoefficient);
+                        float scatter = HG(rayDirection, _SunDirection, _ScatterFactor);
 
-                        // must include some scaling with density because light scatters more if the volume is dense
-                        brightness = brightness + density * sunTransmittance * cameraTransmittance * stepSize;
+                        brightness = brightness + density * sunTransmittance * cameraTransmittance * scatter * stepSize;
                     }
 
                     distanceTravelled = distanceTravelled + stepSize;

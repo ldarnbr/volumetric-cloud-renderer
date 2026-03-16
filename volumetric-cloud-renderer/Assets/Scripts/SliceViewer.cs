@@ -3,6 +3,7 @@ using UnityEngine;
 public class SliceViewer : MonoBehaviour
 {
     public WorleyNoise3D noiseGenerator;
+    public PerlinNoise3D perlinNoiseGenerator;
 
     [Range(0f, 1f)]
     public float sliceDepth = 0f;
@@ -22,9 +23,18 @@ public class SliceViewer : MonoBehaviour
 
     void UpdateSlice()
     {
-        if (noiseGenerator != null)
+        if (noiseGenerator != null || perlinNoiseGenerator != null)
         {
-            Texture3D texture3D = noiseGenerator.GenerateTexture();
+            Texture3D texture3D = null;
+
+            if (perlinNoiseGenerator != null)
+            {
+                texture3D = perlinNoiseGenerator.GenerateTexture();
+            }
+            else
+            {
+                texture3D = noiseGenerator.GenerateTexture();
+            }
             // using a cube, so width, height and depth are the same
             int size = texture3D.width;
 

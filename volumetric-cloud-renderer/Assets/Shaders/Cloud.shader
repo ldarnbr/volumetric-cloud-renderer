@@ -27,6 +27,9 @@ Shader "Custom/CloudShader"
             // the 3D noise texture for density sampling
             sampler3D _NoiseTex;
 
+            // perlin noise texture to break up the worley noise
+            sampler3D _PerlinTex;
+
             float3 _CameraWorldPosition;
             float3 _CloudVolumeMinBound;
             float3 _CloudVolumeMaxBound;
@@ -170,7 +173,7 @@ Shader "Custom/CloudShader"
             float4 MarchDensity(float entry, float exit, float3 rayOrigin, float3 rayDirection, float3 boxMin, float3 boxMax)
             {
                 // how far along the rays path we march before getting the density value
-                float stepSize = 0.01;
+                float stepSize = 1.0;
 
                 // total density measured at all steps
                 float densityTotal = 0;
@@ -184,12 +187,13 @@ Shader "Custom/CloudShader"
                 // distance is measured from the box entry point
                 float distanceTravelled = entry;
 
-                int stepLimit = 100;
+                int stepLimit = 200;
 
                 // keep incrementing the steps until the exit is reached
                 // had to refactor to a for loop because the shader caused errors due to the while loop
                 // having different iteration counts. Converted to a for loop with a defined max iterations but 
                 // the exit condition is still checked and breaks out once met.
+                [loop]
                 for (int i = 0; i < stepLimit; i++)
                 {
 
@@ -207,7 +211,13 @@ Shader "Custom/CloudShader"
 
                     // supply the uvw coordinates of the ray to sample the 3D texture at that position.
                     // reads from the red channel but the values are the same across rgb channels from WorleyNoise3D
-                    float density = tex3D(_NoiseTex, worldScaledRay).r;
+                    float worleyDensity = tex3D(_NoiseTex, worldScaledRay).r;
+                    float perlinDensity = tex3D(_PerlinTex, worldScaledRay).r;
+
+                    // combine the two densities by multiplying. Perlin fills in the gaps in low Worley value regions
+                    // making gaps between the cells more natural.
+                    float density = worleyDensity * perlinDensity;
+
 
                     // setting a threshold density means we can make the clouds more sparse
                     if (density > _DensityThreshold)
@@ -219,7 +229,7 @@ Shader "Custom/CloudShader"
                         float cameraTransmittance = exp(-densityTotal * _AbsorptionCoefficient);
                         float scatter = HG(rayDirection, _SunDirection, _ScatterFactor);
 
-                        brightness = brightness + density * sunTransmittance * cameraTransmittance * scatter * stepSize;
+                        brightness = brightness + density * sunTransmittance * cameraTransmittance * scatter * stepSize * 20;
                     }
 
                     distanceTravelled = distanceTravelled + stepSize;

@@ -28,8 +28,10 @@ public class CloudRenderer : MonoBehaviour
 
     // controls how zoomed into the noise texture we are in the cloud volume box, effectively controlling the
     // size of the clouds themselves.
-    [Range(0.01f, 2f)]
+    [Range(0.001f, 0.05f)]
     public float cloudScale = 0.01f;
+
+    public PerlinNoise3D PerlinNoiseGenerator;
 
     public Light sunLight;
 
@@ -86,6 +88,10 @@ public class CloudRenderer : MonoBehaviour
             // get the colour for tinting
             CloudShaderMaterial.SetVector("_SunColour", new Vector4(sunLight.color.r, sunLight.color.g, sunLight.color.b, 1));
             CloudShaderMaterial.SetFloat("_CloudScale", cloudScale);
+
+            // generates the 3D perlin noise texture and passes it to the shader
+            Texture3D perlinTex = PerlinNoiseGenerator.GenerateTexture();
+            CloudShaderMaterial.SetTexture("_PerlinTex", perlinTex);
 
             // runs the shader on every pixel (Graphics.Blit) and outputs to the destination
             Graphics.Blit(source, destination, CloudShaderMaterial);

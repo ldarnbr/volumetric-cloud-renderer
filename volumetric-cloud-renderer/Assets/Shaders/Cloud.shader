@@ -46,6 +46,8 @@ Shader "Custom/CloudShader"
             float _ScatterFactor;
             float _CloudScale;
 
+            int _OctaveCount;
+
             // data that comes in from unity per vertex
             struct VertexInput
             {
@@ -209,9 +211,39 @@ Shader "Custom/CloudShader"
                     // than stretch when the volume box is adjusted.
                     float3 worldScaledRay = rayPosition * _CloudScale;
 
+                    // REF: https://iquilezles.org/articles/fbm/
+                    // FBM implementation adapted from the standard implementation which avoids pow functions.
+                    float worleyDensity = 0;
+                    float amplitude = 1.0;
+                    float frequency = 1.0;
+                    float amplitudeTotal = 0.0;
+
+                    /* 
+                    Takes the worley noise at increasing frequencies. Each frequency step zooms into the texture to sample even finer
+                    details. Each frequency will have different tiling so will help break up the repetition. Amplitude is halved each step
+                    which effectively reduces the contribution of higher frequencies. The larger octave 1 sampling contributes the most
+                    because it represents the overall cloud shape. The finer details should have less contribution to the brightness/intensity
+                    of the cloud.
+                    */
+                    [loop]
+                    for (int octave = 0; octave < _OctaveCount; octave++)
+                    {
+                        worleyDensity = worleyDensity + tex3D(_NoiseTex, worldScaledRay * frequency ).r * amplitude;
+                        amplitudeTotal = amplitudeTotal + amplitude;
+                        amplitude = amplitude * 0.5;
+                        frequency = frequency * 2.0;
+                    }
+
+                    // normalisation
+                    if (amplitudeTotal > 0)
+                    {
+                        worleyDensity = worleyDensity / amplitudeTotal;
+                    } else {
+                        worleyDensity = 0;
+                    }
+
                     // supply the uvw coordinates of the ray to sample the 3D texture at that position.
                     // reads from the red channel but the values are the same across rgb channels from WorleyNoise3D
-                    float worleyDensity = tex3D(_NoiseTex, worldScaledRay).r;
                     float perlinDensity = tex3D(_PerlinTex, worldScaledRay).r;
 
                     // combine the two densities by multiplying. Perlin fills in the gaps in low Worley value regions

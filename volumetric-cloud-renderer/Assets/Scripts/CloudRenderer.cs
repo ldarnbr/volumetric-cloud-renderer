@@ -31,6 +31,10 @@ public class CloudRenderer : MonoBehaviour
     [Range(0.001f, 0.05f)]
     public float cloudScale = 0.01f;
 
+    // octaves represent the layers of noise to be combined. Layering reduces tiling effects at the cost of some performance.
+    [Range(1, 4)]
+    public int octaveCount = 4;
+
     public PerlinNoise3D PerlinNoiseGenerator;
 
     public Light sunLight;
@@ -92,6 +96,9 @@ public class CloudRenderer : MonoBehaviour
             // generates the 3D perlin noise texture and passes it to the shader
             Texture3D perlinTex = PerlinNoiseGenerator.GenerateTexture();
             CloudShaderMaterial.SetTexture("_PerlinTex", perlinTex);
+
+            // pass octave count to the shader for Fractal Brownian Motion noise layering
+            CloudShaderMaterial.SetInt("_OctaveCount", octaveCount);
 
             // runs the shader on every pixel (Graphics.Blit) and outputs to the destination
             Graphics.Blit(source, destination, CloudShaderMaterial);

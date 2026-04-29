@@ -54,6 +54,10 @@ public class PerlinNoise3D : MonoBehaviour
         }
     }
 
+
+    // This approach generally follows the same method of conversion from Perlins initial Java implementation as Stefan Gustavsons breakdown
+    // REF: https://www.researchgate.net/publication/216813608_Simplex_noise_demystified
+
     public Texture3D GenerateTexture()
     {
         // Perlin uses a lookup table instead of generating a random value. It ensures

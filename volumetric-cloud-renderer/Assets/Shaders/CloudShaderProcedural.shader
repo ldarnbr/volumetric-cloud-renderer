@@ -41,6 +41,8 @@ Shader "Custom/CloudShaderProcedural"
 
             int _OctaveCount;
 
+            float _WindTime;
+
             // data that comes in from unity per vertex
             struct VertexInput
             {
@@ -397,6 +399,9 @@ Shader "Custom/CloudShaderProcedural"
                     // position is in world space
                     rayPosition = rayPosition + (rayDirection * stepSize);
 
+                    // new position based on wind speed scrolling
+                    float3 scrollPosition = rayPosition + float3(_WindTime, 0, 0);
+
                     // clouds are currently being abruptly cutoff at the top and bottom faces of the cuboid volume.
                     // Need to gradually reduce the density as these faces are approached to make it look natural.
                     // Could be done for side faces but they shouldn't been seen if the sky stretches far enough.
@@ -429,7 +434,7 @@ Shader "Custom/CloudShaderProcedural"
                     [loop]
                     for (int octave = 0; octave < _OctaveCount; octave++)
                     {
-                        worleyDensity = worleyDensity + ProceduralWorley(rayPosition * frequency, 1.0 / _CloudScale ) * amplitude;
+                        worleyDensity = worleyDensity + ProceduralWorley(scrollPosition * frequency, 1.0 / _CloudScale ) * amplitude;
                         amplitudeTotal = amplitudeTotal + amplitude;
                         amplitude = amplitude * 0.5;
                         frequency = frequency * 2.0;
@@ -444,7 +449,7 @@ Shader "Custom/CloudShaderProcedural"
                     }
 
                     // sample the procedural Perlin noise to combine with Worley
-                    float perlinDensity = ProceduralPerlin(rayPosition, _CloudScale * 0.8);
+                    float perlinDensity = ProceduralPerlin(scrollPosition, _CloudScale * 0.8);
 
                     // combine the two densities by multiplying. Perlin fills in the gaps in low Worley value regions
                     // making gaps between the cells more natural.
@@ -461,7 +466,7 @@ Shader "Custom/CloudShaderProcedural"
                         float cameraTransmittance = exp(-densityTotal * _AbsorptionCoefficient);
                         float scatter = HG(rayDirection, _SunDirection, _ScatterFactor);
 
-                        brightness = brightness + density * sunTransmittance * cameraTransmittance * scatter * stepSize * 1;
+                        brightness = brightness + density * sunTransmittance * cameraTransmittance * scatter * stepSize * 0.5;
                     }
 
                     distanceTravelled = distanceTravelled + stepSize;

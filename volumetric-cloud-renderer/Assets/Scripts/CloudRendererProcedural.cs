@@ -32,6 +32,18 @@ public class CloudRendererProcedural : MonoBehaviour
     [Range(1, 4)]
     public int octaveCount = 4;
 
+    // controls the speed of the cloud movement
+    [Range(0f, 10f)]
+    public float windSpeed = 1.0f;
+
+    private float windOffset = 0f;
+
+    // accumulates an offset value each frame so that the shader can offset the noise sampling coordinates to 'move' the clouds
+    void Update()
+    {
+        windOffset = windOffset + Time.deltaTime * windSpeed;
+    }
+
     void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
         if (CloudShaderMaterial != null && CloudVolumeBounds != null)
@@ -80,6 +92,8 @@ public class CloudRendererProcedural : MonoBehaviour
 
             // pass octave count to the shader for Fractal Brownian Motion noise layering
             CloudShaderMaterial.SetInt("_OctaveCount", octaveCount);
+
+            CloudShaderMaterial.SetFloat("_WindTime", windOffset);
 
             // runs the shader on every pixel (Graphics.Blit) and outputs to the destination
             Graphics.Blit(source, destination, CloudShaderMaterial);

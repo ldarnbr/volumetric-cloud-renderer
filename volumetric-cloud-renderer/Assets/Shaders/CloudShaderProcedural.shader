@@ -397,6 +397,21 @@ Shader "Custom/CloudShaderProcedural"
                     // position is in world space
                     rayPosition = rayPosition + (rayDirection * stepSize);
 
+                    // clouds are currently being abruptly cutoff at the top and bottom faces of the cuboid volume.
+                    // Need to gradually reduce the density as these faces are approached to make it look natural.
+                    // Could be done for side faces but they shouldn't been seen if the sky stretches far enough.
+                    float distToBot = (rayPosition.y - boxMin.y) / (boxMax.y - boxMin.y);
+                    float distToTop = 1.0 - distToBot;
+
+                    // This will controll how much of the density is allowed to contribute to the opacity. 1 = Full contribution, 0 = Transparent
+                    // (Multiply by 10 to ramp up the fizzle quickly. AKA 0.1 normalised units from the bot will (10%) 
+                    // will cause full density contribution
+                    float botFizzle = clamp(distToBot * 10.0, 0, 1);
+                    float topFizzle = clamp(distToTop * 10.0, 0, 1);
+
+                    // Clouds need to be positioned away from top and bottom to contribute full density
+                    float totalFizzle = botFizzle * topFizzle;
+                 
                     // REF: https://iquilezles.org/articles/fbm/
                     // FBM implementation adapted from the standard implementation which avoids pow functions.
                     float worleyDensity = 0;
@@ -433,7 +448,7 @@ Shader "Custom/CloudShaderProcedural"
 
                     // combine the two densities by multiplying. Perlin fills in the gaps in low Worley value regions
                     // making gaps between the cells more natural.
-                    float density = worleyDensity * perlinDensity;
+                    float density = worleyDensity * perlinDensity * totalFizzle;
 
 
                     // setting a threshold density means we can make the clouds more sparse

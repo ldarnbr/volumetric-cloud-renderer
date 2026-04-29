@@ -38,6 +38,10 @@ public class CloudRendererProcedural : MonoBehaviour
 
     private float windOffset = 0f;
 
+    // Graphics presets for different performance levels.
+    public enum GraphicsQualitySettings { Low, Medium, High }
+    public GraphicsQualitySettings qualityPreset = GraphicsQualitySettings.Medium;
+
     // accumulates an offset value each frame so that the shader can offset the noise sampling coordinates to 'move' the clouds
     void Update()
     {
@@ -94,6 +98,30 @@ public class CloudRendererProcedural : MonoBehaviour
             CloudShaderMaterial.SetInt("_OctaveCount", octaveCount);
 
             CloudShaderMaterial.SetFloat("_WindTime", windOffset);
+
+            switch (qualityPreset)
+            {
+                case GraphicsQualitySettings.Low:
+                    CloudShaderMaterial.SetFloat("_StepSize", 3.0f);
+                    CloudShaderMaterial.SetInt("_StepLimit", 64);
+                    CloudShaderMaterial.SetFloat("_LightStepSize", 20.0f);
+                    CloudShaderMaterial.SetInt("_LightStepLimit", 200);
+                    break;
+
+                case GraphicsQualitySettings.Medium:
+                    CloudShaderMaterial.SetFloat("_StepSize", 2.0f);
+                    CloudShaderMaterial.SetInt("_StepLimit", 128);
+                    CloudShaderMaterial.SetFloat("_LightStepSize", 10.0f);
+                    CloudShaderMaterial.SetInt("_LightStepLimit", 500);
+                    break;
+
+                case GraphicsQualitySettings.High:
+                    CloudShaderMaterial.SetFloat("_StepSize", 1.0f);
+                    CloudShaderMaterial.SetInt("_StepLimit", 256);
+                    CloudShaderMaterial.SetFloat("_LightStepSize", 1f);
+                    CloudShaderMaterial.SetInt("_LightStepLimit", 1000);
+                    break;
+            }
 
             // runs the shader on every pixel (Graphics.Blit) and outputs to the destination
             Graphics.Blit(source, destination, CloudShaderMaterial);

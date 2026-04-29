@@ -43,6 +43,11 @@ Shader "Custom/CloudShaderProcedural"
 
             float _WindTime;
 
+            float _StepSize;
+            int _StepLimit;
+            float _LightStepSize;
+            int _LightStepLimit;
+
             // data that comes in from unity per vertex
             struct VertexInput
             {
@@ -336,8 +341,8 @@ Shader "Custom/CloudShaderProcedural"
             // uses a simplified Beer-Lambert equation to determine how much sunlight reaches the sample point.
             float MarchLight(float3 rayPosition, float3 boxMin, float3 boxMax)
             {
-                float stepSize = 0.2;
-                int stepLimit = 6;
+                float stepSize = _LightStepSize;
+                int stepLimit = _LightStepLimit;
                 float lightDensity = 0;
 
                 for (int i = 0; i < stepLimit; i++)
@@ -367,7 +372,8 @@ Shader "Custom/CloudShaderProcedural"
             float4 MarchDensity(float entry, float exit, float3 rayOrigin, float3 rayDirection, float3 boxMin, float3 boxMax)
             {
                 // how far along the rays path we march before getting the density value
-                float stepSize = 1.0;
+                float stepSize = _StepSize;
+                int stepLimit = _StepLimit;
 
                 // total density measured at all steps
                 float densityTotal = 0;
@@ -380,8 +386,6 @@ Shader "Custom/CloudShaderProcedural"
 
                 // distance is measured from the box entry point
                 float distanceTravelled = entry;
-
-                int stepLimit = 200;
 
                 // keep incrementing the steps until the exit is reached
                 // had to refactor to a for loop because the shader caused errors due to the while loop

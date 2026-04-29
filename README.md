@@ -45,7 +45,9 @@ performance (FPS, load times) and visual fidelity.
 5. Quality presets (Low/Medium/High) for performance benchmarking
 
 ## Screenshots
+### Texture Method
 ![Texture-based clouds](screenshots/texture-clouds.png)
+### Procedural Method
 ![Procedural clouds](screenshots/procedural-clouds.png)
 
 ## How to Install

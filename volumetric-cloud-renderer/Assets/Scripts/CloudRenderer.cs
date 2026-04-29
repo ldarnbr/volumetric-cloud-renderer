@@ -42,6 +42,13 @@ public class CloudRenderer : MonoBehaviour
     private Texture3D cachedNoiseTex;
     private Texture3D cachedPerlinTex;
 
+    [ContextMenu("Clear Texture Cache")]
+    public void ClearCache()
+    {
+        cachedNoiseTex = null;
+        cachedPerlinTex = null;
+    }
+
     // DOCS:
     // https://docs.unity3d.com/6000.3/Documentation/ScriptReference/MonoBehaviour.OnRenderImage.html
 

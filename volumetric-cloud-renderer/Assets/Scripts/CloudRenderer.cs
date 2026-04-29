@@ -39,6 +39,9 @@ public class CloudRenderer : MonoBehaviour
 
     public Light sunLight;
 
+    private Texture3D cachedNoiseTex;
+    private Texture3D cachedPerlinTex;
+
     // DOCS:
     // https://docs.unity3d.com/6000.3/Documentation/ScriptReference/MonoBehaviour.OnRenderImage.html
 
@@ -80,10 +83,15 @@ public class CloudRenderer : MonoBehaviour
             CloudShaderMaterial.SetVector("_FrustumCornerTL", camera.transform.TransformDirection(frustumCorners[1]));
             CloudShaderMaterial.SetVector("_FrustumCornerBL", camera.transform.TransformDirection(frustumCorners[0]));
 
-            // generates the 3D noise texture and passes it to the shader
-            Texture3D noiseTex = NoiseGenerator.GenerateTexture();
+            // now caches the Worley texture if one doesnt already exist. Measures time taken for performance benchmarking.
+            if (cachedNoiseTex == null)
+            {
+                float worleyStartTime = Time.realtimeSinceStartup;
+                cachedNoiseTex = NoiseGenerator.GenerateTexture();
+                Debug.Log("Worley Generation Took: " + (Time.realtimeSinceStartup - worleyStartTime) + " seconds");
+            }
+            CloudShaderMaterial.SetTexture("_NoiseTex", cachedNoiseTex);
 
-            CloudShaderMaterial.SetTexture("_NoiseTex", noiseTex);
             CloudShaderMaterial.SetFloat("_AbsorptionCoefficient", absorptionCoefficient);
 
             // obtains the direction of the light emitted from the sun to pass to the shader for light marching
@@ -93,9 +101,14 @@ public class CloudRenderer : MonoBehaviour
             CloudShaderMaterial.SetVector("_SunColour", new Vector4(sunLight.color.r, sunLight.color.g, sunLight.color.b, 1));
             CloudShaderMaterial.SetFloat("_CloudScale", cloudScale);
 
-            // generates the 3D perlin noise texture and passes it to the shader
-            Texture3D perlinTex = PerlinNoiseGenerator.GenerateTexture();
-            CloudShaderMaterial.SetTexture("_PerlinTex", perlinTex);
+            // now caches the Perlin texture if one doesnt already exist. Measures time taken for performance benchmarking.
+            if (cachedPerlinTex == null)
+            {
+                float perlinStartTime = Time.realtimeSinceStartup;
+                cachedPerlinTex = PerlinNoiseGenerator.GenerateTexture();
+                Debug.Log("Perlin Generation Took: " + (Time.realtimeSinceStartup - perlinStartTime) + " seconds");
+            }
+            CloudShaderMaterial.SetTexture("_PerlinTex", cachedPerlinTex);
 
             // pass octave count to the shader for Fractal Brownian Motion noise layering
             CloudShaderMaterial.SetInt("_OctaveCount", octaveCount);

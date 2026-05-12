@@ -111,7 +111,7 @@ Shader "Custom/CloudShaderProcedural"
             // Hash functions using trig functions can cause unexpected behaviour between different GPU architectures so this might 
             // be something I change if time allows.
             // Saving this reference I found which outlines some alternatives for future me:
-            // file:///C:/Users/ldarn/Downloads/Jarzynski2020Hash%20(3).pdf
+            // Journal of Computer Graphics Techniques Vol. 9, No. 3, 2020
 
             float3 HashCell(float3 cell)
             {
@@ -286,14 +286,6 @@ Shader "Custom/CloudShaderProcedural"
 
                 return inverted;
             }
-
-            // -----------------------------------------------------------------------------------------------------------------
-            // -----------------------------------------------------------------------------------------------------------------
-
-            // Sources:
-            // https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-box-intersection.html
-            // https://www.youtube.com/shorts/GqwUHXvQ7oA
-            // https://tavianator.com/2022/ray_box_boundary.html
 
             float2 RayBoxIntersection(float3 origin, float3 direction, float3 boxMin, float3 boxMax)
             {

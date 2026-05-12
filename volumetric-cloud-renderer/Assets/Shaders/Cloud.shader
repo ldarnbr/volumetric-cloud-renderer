@@ -142,8 +142,8 @@ Shader "Custom/CloudShader"
             // uses a simplified Beer-Lambert equation to determine how much sunlight reaches the sample point.
             float MarchLight(float3 rayPosition, float3 boxMin, float3 boxMax)
             {
-                float stepSize = 0.2;
-                int stepLimit = 6;
+                float stepSize = 20.0;
+                int stepLimit = 200;
                 float lightDensity = 0;
 
                 for (int i = 0; i < stepLimit; i++)
@@ -175,7 +175,7 @@ Shader "Custom/CloudShader"
             float4 MarchDensity(float entry, float exit, float3 rayOrigin, float3 rayDirection, float3 boxMin, float3 boxMax)
             {
                 // how far along the rays path we march before getting the density value
-                float stepSize = 1.0;
+                float stepSize = 3.0;
 
                 // total density measured at all steps
                 float densityTotal = 0;
@@ -189,7 +189,7 @@ Shader "Custom/CloudShader"
                 // distance is measured from the box entry point
                 float distanceTravelled = entry;
 
-                int stepLimit = 200;
+                int stepLimit = 64;
 
                 // keep incrementing the steps until the exit is reached
                 // had to refactor to a for loop because the shader caused errors due to the while loop
@@ -261,7 +261,7 @@ Shader "Custom/CloudShader"
                         float cameraTransmittance = exp(-densityTotal * _AbsorptionCoefficient);
                         float scatter = HG(rayDirection, _SunDirection, _ScatterFactor);
 
-                        brightness = brightness + density * sunTransmittance * cameraTransmittance * scatter * stepSize * 20;
+                        brightness = brightness + density * sunTransmittance * cameraTransmittance * scatter * stepSize * 0.5;
                     }
 
                     distanceTravelled = distanceTravelled + stepSize;

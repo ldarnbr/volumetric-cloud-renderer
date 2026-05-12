@@ -46,7 +46,7 @@ performance (FPS, load times) and visual fidelity.
 
 ## Screenshots
 ### Texture Method
-![Texture-based clouds](screenshots/texture-clouds.png)
+![Texture-based clouds](screenshots/texture-high-preset.png)
 ### Procedural Method
 ![Procedural clouds](screenshots/procedural-clouds.png)
 
@@ -99,9 +99,8 @@ Octave Count - Number of FBM layers (Higher = More detailed cloud edges)
 Wind Speed - Controls how fast the clouds are moving using an offset to the noise sample coordinates
 
 ## Additional Material
-For more complicated concepts, i've included a folder with graphic(s) inside.
-These will be referenced in comments of my code directly to help illustrate
-what the code aims to achieve. These will be cited below, along with other
-references used to implement the various algorithms/approaches I went with.
-
-## References
+I've included a screenshots folder to show the output of the framework for the
+three graphics quality presets in both the texture-based and procedural implementation.
+There are links to further reading in the comments of my code to help understand
+the algorithms used for noise generation/volumetric rendering. These have been formally
+referenced in my dissertation which summarises this project work.
